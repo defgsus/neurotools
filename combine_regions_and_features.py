@@ -9,7 +9,7 @@ def print_slice(fmri, z):
     for y in range(dim[1]):
         print("".join("*" if fmri.samples[0][vox_to_index((x,y,z), dim)] else "." for x in range(dim[0])))
 
-def print_combine(src, atlas):
+def get_combination(src, atlas):
     dim = src.get_attr("voxel_dim")[0].value
     transform = src.get_attr("imgaffine")[0].value
     inv_atlas = np.linalg.inv(atlas.get_attr("imgaffine")[0].value)
@@ -46,8 +46,7 @@ def combine(atlas, fn):
           "output: %s\n"
           "output: %s\n" % (fn, vox_fn, average_fn))
     d = fmri_dataset(fn)
-    #d = fmri_dataset("rp1fam1002_427025_20070113_100405_201_mri_affine.nii")
-    vox, average = print_combine(d, atlas)
+    vox, average = get_combination(d, atlas)
     print("writing output")
     with open(vox_fn, "w") as f:
         f.write("\n".join("\t".join(str(s) for s in v) for v in vox))
@@ -64,18 +63,6 @@ def cmdline(args):
 
     for fn in args:
         combine(atlas, fn)
-    #combine(None, "SYS_Parents_female_PCA(all)_features2mm_GM_p001.img")
-
-    #d = fmri_dataset("SYS_Parents_female_PCA(all)_features2mm_GM_p001.img")
-#d = fmri_dataset("./IIT_GM_Desikan_atlas.nii.gz")
-#dim = d.get_attr("voxel_dim")[0].value
-#print(d.samples[0][vox_to_index((50, 70, 35), dim)],
-#      d.samples[0][vox_to_index((70, 34, 55), dim)])
-# (-0.45185664, -0.44627368)
-
-#def bla():
-    #with open("SYS_Parents_female_PCA(all)_features2mm_GM_p001_per_region_desikan.txt") as f:
-    #    dic =
 
 
 if __name__ == "__main__":
