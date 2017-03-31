@@ -1,13 +1,19 @@
 from mvpa2.datasets.mri import fmri_dataset
 import numpy as np
 
+class Global:
+    atlas = None
+
+
 def vox_to_index(vox, dim):
     return int(vox[2] + dim[2] * (vox[1] + dim[1] * vox[0]))
+
 
 def print_slice(fmri, z):
     dim = fmri.get_attr("voxel_dim")[0].value
     for y in range(dim[1]):
         print("".join("*" if fmri.samples[0][vox_to_index((x,y,z), dim)] else "." for x in range(dim[0])))
+
 
 def get_combination(src, atlas):
     dim = src.get_attr("voxel_dim")[0].value
@@ -39,30 +45,30 @@ def get_combination(src, atlas):
     #print("\n".join(str(r) for r in x))
 
 
-def combine(atlas, fn):
+
+def combine(fn):
     vox_fn = ".".join(fn.split(".")[:-1]) + "_region_map_voxels.txt"
     average_fn = ".".join(fn.split(".")[:-1]) + "_region_map_average.txt"
     print("sampling voxels per region for: %s\n"
           "output: %s\n"
           "output: %s\n" % (fn, vox_fn, average_fn))
     d = fmri_dataset(fn)
-    vox, average = get_combination(d, atlas)
+    if Global.atlas is None:
+        print("loading atlas")
+        Global.atlas = fmri_dataset("./IIT_GM_Desikan_atlas.nii.gz")
+        # print_slice(atlas, atlas.get_attr("voxel_dim")[0].value[2]//2)
+    vox, average = get_combination(d, Global.atlas)
     print("writing output")
     with open(vox_fn, "w") as f:
         f.write("\n".join("\t".join(str(s) for s in v) for v in vox))
     with open(average_fn, "w") as f:
         f.write("\n".join("\t".join(str(s) for s in v) for v in average))
-
-            #print_slice(d, d.get_attr("voxel_dim")[0].value[2]//2)
+        #print_slice(d, d.get_attr("voxel_dim")[0].value[2]//2)
 
 
 def cmdline(args):
-    print("loading atlas")
-    atlas = fmri_dataset("./IIT_GM_Desikan_atlas.nii.gz")
-    # print_slice(atlas, atlas.get_attr("voxel_dim")[0].value[2]//2)
-
     for fn in args:
-        combine(atlas, fn)
+        combine(fn)
 
 
 if __name__ == "__main__":
