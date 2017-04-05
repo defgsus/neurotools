@@ -1,2 +1,2 @@
 # neurotools
-small collection of brainimaging helper scripts in python
+place to put helper scripts for my beloved neuro scientist
